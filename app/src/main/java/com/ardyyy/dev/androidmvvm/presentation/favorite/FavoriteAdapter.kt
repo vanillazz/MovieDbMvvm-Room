@@ -5,13 +5,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import coil.api.load
+import coil.load
 import com.ardyyy.dev.androidmvvm.R
 import com.ardyyy.dev.androidmvvm.data.local.entity.FavoriteMovie
 import com.ardyyy.dev.androidmvvm.utils.createCircularProgress
 import kotlinx.android.synthetic.main.list_item_movie.view.*
 
-class FavoriteAdapter(val obj: List<FavoriteMovie>, private var onClick: (FavoriteMovie) -> Unit) :
+class FavoriteAdapter(private val obj: List<FavoriteMovie>, private var onClick: (FavoriteMovie) -> Unit) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -26,7 +26,7 @@ class FavoriteAdapter(val obj: List<FavoriteMovie>, private var onClick: (Favori
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        (holder as ContentViewHolder).bind(obj.get(position), holder.itemView.context)
+        (holder as ContentViewHolder).bind(obj[position], holder.itemView.context)
     }
 
     inner class ContentViewHolder(mView: View) :

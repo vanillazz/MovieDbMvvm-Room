@@ -5,7 +5,7 @@ import android.os.Handler
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
-import coil.api.load
+import coil.load
 import com.ardyyy.dev.androidmvvm.R
 import com.ardyyy.dev.androidmvvm.data.models.response.MovieItem
 import com.ardyyy.dev.androidmvvm.utils.NetworkHelper

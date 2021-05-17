@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import coil.api.load
+import coil.load
 import com.ardyyy.dev.androidmvvm.R
 import com.ardyyy.dev.androidmvvm.data.models.response.MovieItem
 import com.ardyyy.dev.androidmvvm.utils.createCircularProgress
@@ -13,7 +13,6 @@ import kotlinx.android.synthetic.main.list_item_movie.view.*
 
 class HomeAdapter(private val obj: List<MovieItem>, private var onClick: (MovieItem) -> Unit) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-
 
     private val TYPECONTENT = 1
     private val TYPELOADING = 2

@@ -32,7 +32,8 @@ private fun httpInterceptor() = HttpLoggingInterceptor().apply {
 private fun parameteraInterceptor() = object: Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         var request: Request = chain.request()
-        val url: HttpUrl = request.url().newBuilder().addQueryParameter("api_key", BuildConfig.API_KEY).build()
+        val url: HttpUrl =
+            request.url.newBuilder().addQueryParameter("api_key", BuildConfig.API_KEY).build()
         request = request.newBuilder().url(url).build()
         return chain.proceed(request)
     }

@@ -11,14 +11,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ardyyy.dev.androidmvvm.R
 import com.ardyyy.dev.androidmvvm.data.models.response.MovieItem
+import com.ardyyy.dev.androidmvvm.databinding.ActivityHomeBinding
 import com.ardyyy.dev.androidmvvm.presentation.base.BaseActivity
 import com.ardyyy.dev.androidmvvm.presentation.detail.DetailActivity
 import com.ardyyy.dev.androidmvvm.presentation.favorite.FavoriteActivity
 import com.ardyyy.dev.androidmvvm.utils.*
-import com.facebook.shimmer.ShimmerFrameLayout
 import com.google.android.material.bottomsheet.BottomSheetBehavior
-import kotlinx.android.synthetic.main.activity_home.*
-import kotlinx.android.synthetic.main.moviemenu_bottomsheet.*
 import org.koin.android.viewmodel.ext.android.viewModel
 
 
@@ -34,12 +32,14 @@ class HomeActivity : BaseActivity(), View.OnClickListener {
     private var isLoadMore: Boolean = false
     private var page: Int = 1
     private var tempCategory: MovieCategories = MovieCategories.NOWPLAYING
-
+    private lateinit var binding: ActivityHomeBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_home)
-        setSupportActionBar(toolbar)
+        binding = ActivityHomeBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        setSupportActionBar(binding.toolbar)
 
         initializeBottomSheet()
         initAdapter()
@@ -48,54 +48,55 @@ class HomeActivity : BaseActivity(), View.OnClickListener {
     }
 
     private fun initializeBottomSheet() {
-        sheetBehavior = BottomSheetBehavior.from(bottom_sheet)
-        sheetBehavior.setPeekHeight(tv_bottomsheet_toggle.height, true)
+        sheetBehavior = BottomSheetBehavior.from(binding.homeBottomSheet.bottomSheet)
+        sheetBehavior.setPeekHeight(binding.homeBottomSheet.tvBottomsheetToggle.height, true)
         sheetBehavior.addBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
             }
+
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 println(newState)
             }
         })
-        tv_bottomsheet_toggle.setOnClickListener(this)
-        tv_popular.setOnClickListener(this)
-        tv_upcoming.setOnClickListener(this)
-        tv_nowplaying.setOnClickListener(this)
-        tv_toprated.setOnClickListener(this)
+        binding.homeBottomSheet.tvBottomsheetToggle.setOnClickListener(this)
+        binding.homeBottomSheet.tvPopular.setOnClickListener(this)
+        binding.homeBottomSheet.tvUpcoming.setOnClickListener(this)
+        binding.homeBottomSheet.tvNowplaying.setOnClickListener(this)
+        binding.homeBottomSheet.tvToprated.setOnClickListener(this)
     }
 
     private fun initAdapter() {
-        homeAdapter = HomeAdapter(listMovie){
+        homeAdapter = HomeAdapter(listMovie) {
             println("clicked ${it.id}")
             val intent = Intent(this, DetailActivity::class.java)
             intent.putExtra(DetailActivity.EXTRAS_MOVIEID, it.id)
             startActivity(intent)
         }
         linearLayoutManager = LinearLayoutManager(this, RecyclerView.VERTICAL, false)
-        rvHome.apply {
+        binding.rvHome.apply {
             layoutManager = linearLayoutManager
             adapter = homeAdapter
         }
     }
 
-    private fun initListener(){
+    private fun initListener() {
         scrollListener = object : EndlessRecyclerViewScrollListener(2, linearLayoutManager) {
             override fun onLoadMore(page: Int, totalItemsCount: Int, view: RecyclerView) {
                 insertLoadingItem()
                 hitApi(false)
             }
         }
-        rvHome.addOnScrollListener(scrollListener)
+        binding.rvHome.addOnScrollListener(scrollListener)
     }
 
     private fun initProcess() {
         homeViewModel.movieData.observe(this@HomeActivity, Observer {
             when (it) {
                 is UiState.Loading -> {
-                println("loading")
-            }
+                    println("loading")
+                }
                 is UiState.Success -> {
-                    stopShimmer(rvHome)
+                    stopShimmer(binding.rvHome)
                     if (!isLoadMore) {
                         if (!listMovie.isEmpty()) listMovie.clear()
                         it.data.results?.let { it1 -> listMovie.addAll(it1) }
@@ -114,7 +115,7 @@ class HomeActivity : BaseActivity(), View.OnClickListener {
                     isLoadMore = true
                 }
                 is UiState.Error -> {
-                    stopShimmer(rvHome)
+                    stopShimmer(binding.rvHome)
                     val message = NetworkHelper().getErrorMessage(it.throwable)
                     this@HomeActivity.showShortToast(message)
                 }
@@ -127,7 +128,7 @@ class HomeActivity : BaseActivity(), View.OnClickListener {
         if (isInitial) {
             page = 1
             isLoadMore = false
-            startShimmer(rvHome)
+            startShimmer(binding.rvHome)
         } else {
             page += 1
             isLoadMore = true
@@ -140,14 +141,14 @@ class HomeActivity : BaseActivity(), View.OnClickListener {
     }
 
     private fun startShimmer(rv: RecyclerView) {
-        val shimmer = homeShimmer as ShimmerFrameLayout
+        val shimmer = binding.homeShimmer.root
         rv.visibility = View.GONE
         shimmer.visibility = View.VISIBLE
         shimmer.startShimmer()
     }
 
     private fun stopShimmer(rv: RecyclerView) {
-        val shimmer = homeShimmer as ShimmerFrameLayout
+        val shimmer = binding.homeShimmer.root
         rv.visibility = View.VISIBLE
         shimmer.visibility = View.GONE
         shimmer.stopShimmer()
@@ -156,20 +157,18 @@ class HomeActivity : BaseActivity(), View.OnClickListener {
     private fun insertLoadingItem() {
         loadingItem.isLoading = true
         listMovie.add(loadingItem)
-        println("testinggg add ${listMovie.size - 1}")
         homeAdapter.notifyItemInserted(listMovie.size - 1)
     }
 
     private fun removeLoadingItem() {
-        println("testinggg remove ${listMovie.get(listMovie.lastIndex)}")
         listMovie.removeAt(listMovie.lastIndex)
         val scrollPosition: Int = listMovie.size
         homeAdapter.notifyItemRemoved(scrollPosition)
     }
 
     override fun onClick(v: View?) {
-        when (v) {
-            tv_bottomsheet_toggle -> {
+        when (v?.id) {
+            R.id.tv_bottomsheet_toggle -> {
                 if (sheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED) {
                     sheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED)
                 } else {
@@ -177,11 +176,11 @@ class HomeActivity : BaseActivity(), View.OnClickListener {
                 }
             }
             else -> {
-                when(v){
-                    tv_popular -> tempCategory = MovieCategories.POPULAR
-                    tv_upcoming -> tempCategory = MovieCategories.UPCOMING
-                    tv_nowplaying -> tempCategory = MovieCategories.NOWPLAYING
-                    tv_toprated -> tempCategory = MovieCategories.TOPRATED
+                when (v?.id) {
+                    R.id.tv_popular -> tempCategory = MovieCategories.POPULAR
+                    R.id.tv_upcoming -> tempCategory = MovieCategories.UPCOMING
+                    R.id.tv_nowplaying -> tempCategory = MovieCategories.NOWPLAYING
+                    R.id.tv_toprated -> tempCategory = MovieCategories.TOPRATED
                 }
                 hitApi(true)
                 sheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED)
